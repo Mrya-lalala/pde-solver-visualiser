@@ -1,0 +1,290 @@
+[
+  {
+    "parameters": {
+      "speed": 0.5,
+      "shift": 0,
+      "count": 5,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 4.69755345733347e-11,
+    "residual": 7.439316523916162e-09
+  },
+  {
+    "parameters": {
+      "speed": 0.5,
+      "shift": 0,
+      "count": 5,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": true,
+    "error": 5.733968855281546e-11,
+    "residual": 1.1030586929972053e-08
+  },
+  {
+    "parameters": {
+      "speed": 0.5,
+      "shift": 0,
+      "count": 6,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 8.543832308305355e-12,
+    "residual": 1.029827504522851e-09
+  },
+  {
+    "parameters": {
+      "speed": 0.5,
+      "shift": 0,
+      "count": 6,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": true,
+    "error": 1.7092327553314135e-11,
+    "residual": 2.0378317922009614e-09
+  },
+  {
+    "parameters": {
+      "speed": 0.5,
+      "shift": 0.5,
+      "count": 5,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 3.130717907140479e-11,
+    "residual": 3.3731762105748686e-09
+  },
+  {
+    "parameters": {
+      "speed": 0.5,
+      "shift": 0.5,
+      "count": 5,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": true,
+    "error": 1.0739720224250959e-10,
+    "residual": 1.0481339351997576e-08
+  },
+  {
+    "parameters": {
+      "speed": 0.5,
+      "shift": 0.5,
+      "count": 6,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 7.962297488006698e-12,
+    "residual": 1.049095480626372e-09
+  },
+  {
+    "parameters": {
+      "speed": 0.5,
+      "shift": 0.5,
+      "count": 6,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": true,
+    "error": 1.570277241569329e-11,
+    "residual": 2.112869652356226e-09
+  },
+  {
+    "parameters": {
+      "speed": 1,
+      "shift": 0,
+      "count": 5,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 1.1467937710563092e-10,
+    "residual": 4.412234771988821e-08
+  },
+  {
+    "parameters": {
+      "speed": 1,
+      "shift": 0,
+      "count": 5,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": true,
+    "error": 7.578622174264638e-10,
+    "residual": 4.4823775219304807e-08
+  },
+  {
+    "parameters": {
+      "speed": 1,
+      "shift": 0,
+      "count": 6,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 3.418465510662827e-11,
+    "residual": 8.151327168803846e-09
+  },
+  {
+    "parameters": {
+      "speed": 1,
+      "shift": 0,
+      "count": 6,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": true,
+    "error": 1.9880497248436768e-10,
+    "residual": 1.9841810555548967e-08
+  },
+  {
+    "parameters": {
+      "speed": 1,
+      "shift": 0.5,
+      "count": 5,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 2.1479440448501919e-10,
+    "residual": 4.1925357407990305e-08
+  },
+  {
+    "parameters": {
+      "speed": 1,
+      "shift": 0.5,
+      "count": 5,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": true,
+    "error": 2.5768605027565172e-09,
+    "residual": 1.6699431359956662e-07
+  },
+  {
+    "parameters": {
+      "speed": 1,
+      "shift": 0.5,
+      "count": 6,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 3.140554483138658e-11,
+    "residual": 8.451478609424904e-09
+  },
+  {
+    "parameters": {
+      "speed": 1,
+      "shift": 0.5,
+      "count": 6,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": true,
+    "error": 1.833622143010416e-10,
+    "residual": 1.9902992254294816e-08
+  },
+  {
+    "parameters": {
+      "speed": 2,
+      "shift": 0,
+      "count": 5,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 1.5157244348529275e-09,
+    "residual": 1.7929510087721923e-07
+  },
+  {
+    "parameters": {
+      "speed": 2,
+      "shift": 0,
+      "count": 5,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": true,
+    "error": 2.5833372685468703e-07,
+    "residual": 9.418360401580728e-06
+  },
+  {
+    "parameters": {
+      "speed": 2,
+      "shift": 0,
+      "count": 6,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 3.9760994496873536e-10,
+    "residual": 7.936724222219587e-08
+  },
+  {
+    "parameters": {
+      "speed": 2,
+      "shift": 0,
+      "count": 6,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": true,
+    "error": 3.424495353954171e-08,
+    "residual": 2.064492704123566e-06
+  },
+  {
+    "parameters": {
+      "speed": 2,
+      "shift": 0.5,
+      "count": 5,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 5.1537210055130345e-09,
+    "residual": 6.679772543982665e-07
+  },
+  {
+    "parameters": {
+      "speed": 2,
+      "shift": 0.5,
+      "count": 5,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": false,
+    "error": 4.122746704027236e-07,
+    "residual": 1.5607055148247895e-05
+  },
+  {
+    "parameters": {
+      "speed": 2,
+      "shift": 0.5,
+      "count": 6,
+      "length": 1,
+      "duration": 0.5
+    },
+    "passed": true,
+    "error": 3.667244286020832e-10,
+    "residual": 7.961196901717926e-08
+  },
+  {
+    "parameters": {
+      "speed": 2,
+      "shift": 0.5,
+      "count": 6,
+      "length": 1,
+      "duration": 1
+    },
+    "passed": true,
+    "error": 2.9790290234643635e-08,
+    "residual": 2.014236477387854e-06
+  }
+]

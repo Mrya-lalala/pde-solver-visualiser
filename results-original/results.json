@@ -1,0 +1,41 @@
+{
+  "equation": "u_t = u*u_xxx + u*u_x + 3*u_x*u_xx",
+  "method": "k=1 shifted Hermite, mixed-derivative integration, tensor midpoint collocation",
+  "basis_count_per_variable": 6,
+  "unknown_coefficients": 36,
+  "space_interval": [
+    0,
+    1.0
+  ],
+  "time_interval": [
+    0,
+    1.0
+  ],
+  "initial_profile": "-8*cos(x/4)**2/3",
+  "boundary_traces_u_ux_uxx": [
+    "-8*cos(t/4)**2/3",
+    "-2*sin(t/2)/3",
+    "cos(t/2)/3"
+  ],
+  "nonlinear_solver_message": "The solution converged.",
+  "collocation_max_abs_residual": 1.4363510381087963e-15,
+  "collocation_residual_tolerance": 1e-08,
+  "validation_grid_shape": [
+    121,
+    101
+  ],
+  "validation_max_abs_pde_residual": 1.9841810555548967e-08,
+  "validation_residual_tolerance": 1e-05,
+  "validation_passed": true,
+  "data_error_tolerance": 1e-12,
+  "initial_max_abs_error": 4.440892098500626e-16,
+  "boundary_max_abs_errors_u_ux_uxx": [
+    4.440892098500626e-16,
+    0.0,
+    5.551115123125783e-17
+  ],
+  "reference_used_during_solve": false,
+  "limitation": "Benchmark with prescribed u, u_x, u_xx at x=0; no general well-posedness guarantee.",
+  "max_abs_solution_error": 1.9880497248436768e-10,
+  "rms_solution_error": 2.0966734060997683e-11
+}

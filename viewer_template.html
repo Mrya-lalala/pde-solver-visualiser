@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wavelet field explorer</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,Segoe UI,system-ui,sans-serif;background:#070a16;color:#e9eefb}*{box-sizing:border-box}body{margin:0}main{max-width:1440px;margin:auto;padding:36px 36px 24px}header{display:flex;justify-content:space-between;align-items:start;gap:24px}.eyebrow{color:#7edde0;letter-spacing:.18em;font-size:11px;font-weight:600;text-transform:uppercase}h1{font-size:clamp(25px,4vw,40px);font-weight:500;margin:12px 0}p{color:#a7b2cd;font-size:14px;line-height:1.6;margin:8px 0}.badge{border:1px solid #29334f;border-radius:30px;padding:9px 14px;font-size:12px;color:#b8c4dc;white-space:nowrap}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:24px 0 10px}.modes{display:flex;gap:4px;padding:4px;border:1px solid #28324d;border-radius:10px}button,select{font:inherit;font-size:13px;background:#131b30;color:#d8e2f5;border:1px solid #33425c;padding:10px 14px;border-radius:6px;cursor:pointer}button[aria-pressed=true]{background:#a4eeee;color:#09202c;border-color:#a4eeee}.modes button{border:0;background:transparent}.modes button[aria-pressed=true]{background:#a4eeee}button:disabled{opacity:.4;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #87e7ff;outline-offset:3px}.time-control{display:flex;align-items:center;gap:12px;flex:1;min-width:240px}input[type=range]{accent-color:#82dddd;flex:1;min-width:60px}.numeric{font-variant-numeric:tabular-nums}#time-value{min-width:85px;font-size:13px}.figure{border-top:1px solid #25304b}#field{height:480px}#curve{height:420px}h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:#b6c4df;margin:22px 0 0}.details{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between;border-top:1px solid #25304b;padding:14px 0;font-size:12px;color:#aebad4}#readout{color:#b8f6e8;min-height:20px}footer{font-size:12px;color:#8b98b4;line-height:1.6;padding-top:10px}.hint{font-size:12px}.modebar{background:transparent!important}@media(max-width:600px){main{padding:20px 10px}header{display:block}.badge{display:inline-block;margin-top:8px}#field{height:390px}.toolbar{gap:8px}.time-control{flex-basis:100%}button,select{min-height:42px}.details{gap:8px}}
+
+[hidden]{display:none!important}fieldset{border:1px solid #29334f;border-radius:12px;padding:16px}#inputs{display:flex;flex-wrap:wrap;gap:16px}#inputs label{display:grid;gap:6px;font-size:13px}pre{white-space:pre-wrap;color:#b8f6e8;line-height:1.6}summary{cursor:pointer;padding:14px 0}#status{min-height:24px}#displayed{overflow-wrap:anywhere}input[type=checkbox]{accent-color:#82dddd}
+</style></head><body><main>
+<header><div><div class="eyebrow">Polynomial wavelets / numerical solution</div><h1 id="title">Rosenau-Hyman explorer</h1><p id="subtitle">u_t = u u_xxx + u u_x + 3 u_x u_xx</p></div><span class="badge" id="badge"></span></header>
+<section id="editor" hidden>
+<fieldset><legend>Mathematical problem</legend><div id="inputs">
+<label>Problem family<select disabled><option>Rosenau-Hyman travelling wave</option></select></label>
+<label>Wave speed c<select id="wave-speed"><option>0.5</option><option selected>1</option><option>2</option></select></label>
+<label>Spatial shift a<select id="shift"><option>0</option><option>0.5</option></select></label>
+<label>Spatial length L<select id="length"><option>1</option></select></label>
+<label>Duration T<select id="duration"><option>0.5</option><option selected>1</option></select></label>
+</div><p>Speed and amplitude are linked. Spatial derivative traces are prescribed benchmark inputs.</p><pre id="conditions"></pre></fieldset>
+<div class="toolbar"><span>Approximation: Hermite, single cell (k=1)</span><label>Basis count N <select id="count"><option>5</option><option selected>6</option></select></label><label><input id="reference" type="checkbox" checked> Compute optional reference comparison</label></div>
+<p id="support">Discrete tested combinations only; every new solve is independently checked.</p>
+<div class="toolbar"><button id="solve">Solve</button><button id="original">Reset to original benchmark</button></div>
+</section>
+<p id="status" role="status" aria-live="polite"></p><p id="displayed">No numerical result loaded. Choose Solve to compute the original benchmark.</p>
+<details id="diagnostics"><summary>Numerical diagnostics and displayed conditions</summary><pre id="report"></pre></details>
+<section id="plots" hidden>
+<div class="toolbar"><button id="play">Play</button><div class="time-control"><label for="time">Time</label><input type="range" id="time" min="0" step="1" value="0"><output id="time-value"></output></div><label for="speed">Playback speed</label><select id="speed"><option value="1">1x</option><option value="2">2x</option><option value="0.5">0.5x</option></select><label><input id="overlay" type="checkbox" checked> Exact-reference overlay</label><button id="reset">Reset zoom</button></div>
+<h2>Numerical solution profile</h2><div id="curve" role="img" aria-label="Numerical solution versus position"></div>
+<details id="landscape"><summary>Optional space-time and error views</summary><div class="modes"><button id="solution" aria-pressed="true">Solution heatmap</button><button id="error" aria-pressed="false">Absolute error</button></div><p id="range"></p><div id="field" role="img" aria-label="Space-time field"></div><p id="readout">Click the field to inspect a saved sample.</p></details>
+<footer id="foot"></footer></section>
+</main><script>/*__PLOTLY__*/</script><script>
+'use strict';
+const INITIAL=/*__DATA__*/;
+const $=id=>document.getElementById(id), live=INITIAL.live===true;
+let D=null,index=0,mode='solution',playing=false,lastFrame=0,busy=false,job=null;
+const palette=[[0,'#0a102c'],[.2,'#39276f'],[.42,'#6952b2'],[.65,'#139dac'],[.83,'#70e5d4'],[1,'#fff0ac']];
+const stats=a=>{let lo=Infinity,hi=-Infinity;for(const row of a)for(const v of row){lo=Math.min(lo,v);hi=Math.max(hi,v)}return [lo,hi]};
+const padded=([a,b])=>{let p=(b-a||1)*.07;return [a-p,b+p]};
+const axis={gridcolor:'#202942',zeroline:false,tickfont:{color:'#9baecb'}};
+const base={paper_bgcolor:'#070a16',plot_bgcolor:'#070a16',font:{family:'Segoe UI',color:'#d9e7f6'},margin:{l:65,r:65,t:35,b:50},dragmode:'zoom'};
+const config={responsive:true,displaylogo:false,toImageButtonOptions:{format:'png',scale:2}};
+function parameters(){return {speed:Number($('wave-speed').value),shift:Number($('shift').value),count:Number($('count').value),length:Number($('length').value),duration:Number($('duration').value),reference:$('reference').checked}}
+function setParameters(p){for(const [key,id] of Object.entries({speed:'wave-speed',shift:'shift',count:'count',length:'length',duration:'duration'}))$(id).value=p[key];$('reference').checked=p.reference}
+function supported(p){return INITIAL.supported.some(q=>Object.keys(q).every(k=>q[k]===p[k]))}
+function preview(){const p=parameters(),c=p.speed,a=p.shift;
+$('conditions').textContent=`Domain: 0 <= x <= ${p.length}, 0 <= t <= ${p.duration}\nu(x,0) = -(8*${c}/3) cos^2((x-${a})/4)\nu(0,t) = -(8*${c}/3) cos^2((${c}t+${a})/4)\nu_x(0,t) = -(2*${c}/3) sin((${c}t+${a})/2)\nu_xx(0,t) = (${c}/3) cos((${c}t+${a})/2)`;
+const ok=supported(p);$('solve').disabled=busy||!ok;
+$('support').textContent=ok?'Tested combination. Changes apply only when you press Solve.':'Unsupported combination: use N=6 for c=2, a=0.5, T=1.';
+if(!busy)$('status').textContent='Inputs not yet solved. The displayed result, if any, is unchanged.';
+}
+function pause(){playing=false;$('play').textContent='Play'}
+function timeLine(){return {type:'line',xref:'x',yref:'y',x0:D.x[0],x1:D.x.at(-1),y0:D.t[index],y1:D.t[index],line:{color:'#fff',dash:'dot',width:2}}}
+function yRange(){const e=stats(D.u),r=D.exact?stats(D.exact):e;return padded([Math.min(e[0],r[0]),Math.max(e[1],r[1])])}
+async function drawCurve(){const traces=[{x:D.x,y:D.u[index],type:'scatter',mode:'lines',name:'Hermite numerical solution',line:{color:'#77e5d3',width:3}}];if(D.exact)traces.push({x:D.x,y:D.exact[index],visible:$('overlay').checked,type:'scatter',mode:'lines',name:'Exact reference',line:{color:'#e9d998',dash:'dot',width:2}});
+await Plotly.react($('curve'),traces,{...base,uirevision:D.report?.run_id||'snapshot',xaxis:{...axis,title:{text:'Position x'}},yaxis:{...axis,title:{text:'u(x,t)'},range:yRange()},legend:{orientation:'h'}},config)}
+async function drawField(){if(!$('landscape').open)return;
+const isError=mode==='error'&&D.exact;
+const error=isError?D.u.map((row,j)=>row.map((v,i)=>Math.abs(v-D.exact[j][i]))):null;
+const max=error?stats(error)[1]:0,floor=Math.max(max*1e-8,1e-16);
+const z=error?error.map(row=>row.map(v=>Math.log10(Math.max(v,floor)))):D.u;
+const [lo,hi]=stats(z);
+$('range').textContent=error?`Error colours: log10(|error|), display floor ${floor.toExponential(1)}. Maximum sampled error ${max.toExponential(3)}.`:`Fixed solution range: ${lo.toPrecision(6)} to ${hi.toPrecision(6)}`;
+await Plotly.react($('field'),[{type:'contour',x:D.x,y:D.t,z,customdata:error||D.u,zmin:lo,zmax:hi===lo?lo+1:hi,colorscale:palette,ncontours:18,contours:{coloring:'heatmap'},line:{width:.5},colorbar:{title:{text:error?'log10 |error|':'u'}},hovertemplate:'x=%{x:.4f}<br>t=%{y:.4f}<br>value=%{customdata:.8g}<extra></extra>'}],{...base,uirevision:(D.report?.run_id||'snapshot')+mode,xaxis:{...axis,title:{text:'Position x'}},yaxis:{...axis,title:{text:'Time t'}},shapes:[timeLine()]},config);
+$('field').removeAllListeners('plotly_click');$('field').on('plotly_click',ev=>{const p=ev.points[0];if(!p)return;pause();const nearest=(a,v)=>a.reduce((best,w,i)=>Math.abs(w-v)<Math.abs(a[best]-v)?i:best,0);const i=nearest(D.x,p.x),j=nearest(D.t,p.y);selectTime(j);$('readout').textContent=`Saved sample: x=${D.x[i]}, t=${D.t[j]}, u=${D.u[j][i].toPrecision(9)}`})}
+async function selectTime(j){index=Math.max(0,Math.min(D.t.length-1,j));$('time').value=index;$('time-value').textContent='t = '+D.t[index].toFixed(4);await Plotly.restyle($('curve'),{y:D.exact?[D.u[index],D.exact[index]]:[D.u[index]]});if($('landscape').open)await Plotly.relayout($('field'),{shapes:[timeLine()]})}
+async function loadResult(data){pause();D=data;index=0;mode='solution';$('solution').setAttribute('aria-pressed','true');$('error').setAttribute('aria-pressed','false');$('plots').hidden=false;$('time').max=D.t.length-1;$('overlay').disabled=!D.exact;$('error').disabled=!D.exact;
+const r=D.report,p=r?.parameters;
+$('displayed').textContent=p?`Displayed result: c=${p.speed}, a=${p.shift}, N=${p.count}, L=${p.length}, T=${p.duration} | run ${r.run_id}`:`Displayed saved result: ${r?.equation||'numerical solution'} | N=${r?.basis_count_per_variable||'?'} | x=[${D.x[0]},${D.x.at(-1)}], t=[${D.t[0]},${D.t.at(-1)}]`;
+$('report').textContent=r?JSON.stringify(r,null,2):'No validation report accompanies this snapshot.';
+$('foot').textContent=`${D.x.length} positions x ${D.t.length} saved times. Time scrubbing uses numerical samples; contours interpolate them. Sampled residuals are not rigorous error bounds. ${D.exact?'Exact values are a separate post-solve comparison.':'No exact comparison was requested.'}`;
+await drawCurve();await drawField();await selectTime(0);window.viewerReady=true}
+async function request(path,options){const response=await fetch(path,options);const data=await response.json();if(!response.ok)throw Error(data.error||'Request failed');return data}
+async function poll(){try{const state=await request('/api/status');if(state.job_id!==job)throw Error('The active job changed. Reload to inspect the current result.');if(state.status==='running'){setTimeout(poll,250);return}busy=false;preview();if(state.status==='complete'){const data=await request('/api/result');if(data.report.run_id!==state.run_id)throw Error('Result changed; reload to inspect the latest run');await loadResult(data);$('status').textContent='Solve passed. Displaying the completed run. '+(Object.keys(parameters()).every(k=>parameters()[k]===state.parameters[k])?'':'Current input edits have not been solved.')}else{$('status').textContent='Solve failed: '+state.error+' Previous result retained.';if(state.report)$('status').textContent+=' PDE residual: '+state.report.validation_max_abs_pde_residual}}catch(e){busy=false;preview();$('status').textContent='Connection or solve error: '+e.message+'. Previous result retained.'}}
+$('solve').onclick=async()=>{busy=true;preview();$('status').textContent='Solving numerically... Previous result remains available.';try{const response=await request('/api/solve',{method:'POST',headers:{'Content-Type':'application/json','X-App-Token':INITIAL.token},body:JSON.stringify(parameters())});job=response.job_id;poll()}catch(e){busy=false;preview();$('status').textContent=e.message+' Previous result retained.'}};
+$('original').onclick=()=>{setParameters(INITIAL.defaults);pause();$('landscape').open=false;preview();$('status').textContent='Original benchmark inputs restored. Press Solve to compute them.'};
+$('time').oninput=()=>{pause();selectTime(Number($('time').value))};
+async function frame(now){if(!playing)return;if(now-lastFrame>=120/Number($('speed').value)){lastFrame=now;if(index>=D.t.length-1){pause();return}await selectTime(index+1)}if(playing)requestAnimationFrame(frame)}
+$('play').onclick=async()=>{if(playing){pause();return}if(index===D.t.length-1)await selectTime(0);playing=true;$('play').textContent='Pause';lastFrame=0;requestAnimationFrame(frame)};
+$('overlay').onchange=()=>drawCurve();$('landscape').ontoggle=()=>{if(D)drawField()};
+for(const next of ['solution','error'])$(next).onclick=()=>{mode=next;for(const k of ['solution','error'])$(k).setAttribute('aria-pressed',k===mode);drawField()};
+$('reset').onclick=()=>{Plotly.relayout($('curve'),{'xaxis.autorange':true,'yaxis.range':yRange()});if($('landscape').open)Plotly.relayout($('field'),{'xaxis.autorange':true,'yaxis.autorange':true})};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
+async function boot(){if(live){$('badge').textContent='Local numerical solver';$('editor').hidden=false;setParameters(INITIAL.defaults);for(const id of ['wave-speed','shift','length','duration','count','reference'])$(id).onchange=preview;preview();const state=await request('/api/status');if(state.status==='running'){busy=true;job=state.job_id;preview();poll()}try{await loadResult(await request('/api/result'))}catch(e){$('status').textContent='Ready. Press Solve to compute the original benchmark.'}}else{$('badge').textContent='Offline saved result';$('title').textContent='Wavelet solution explorer';$('subtitle').textContent=INITIAL.report?.equation||'Saved numerical solution';$('status').textContent='Offline snapshot. Start local_server.py for new Rosenau-Hyman solves.';await loadResult(INITIAL)}}
+boot().catch(e=>{$('status').textContent=e.message;console.error(e)});
+</script></body></html>

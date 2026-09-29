@@ -1,0 +1,38 @@
+{
+  "equation": "u_t = alpha*u_xx",
+  "method": "k=1 shifted Hermite, endpoint-constrained integration, tensor midpoint collocation",
+  "basis_count_per_variable": 16,
+  "unknown_coefficients": 256,
+  "parameters": {
+    "alpha": 1.0,
+    "length": 1.0,
+    "duration": 1.0
+  },
+  "initial_profile": "sin(pi*x/L)",
+  "boundary_conditions": "u(0,t) = u(L,t) = 0",
+  "exact_solution": "exp(-alpha*(pi/L)**2*t)*sin(pi*x/L)",
+  "linear_solve": "numpy.linalg.solve (direct)",
+  "collocation_max_abs_residual": 4.871325565147799e-12,
+  "condition_number_2norm": 7.632520179573149e+18,
+  "condition_number_times_eps": 1694.7599278556488,
+  "conditioning_warning": true,
+  "validation_grid_shape": [
+    121,
+    101
+  ],
+  "validation_max_abs_pde_residual": 5.711354148729697e-06,
+  "validation_residual_tolerance": 1e-05,
+  "solution_error_tolerance": 1e-06,
+  "data_error_tolerance": 1e-12,
+  "initial_max_abs_error": 0.0,
+  "endpoint_max_abs_errors_u0_uL": [
+    0.0,
+    1.2246467991473532e-16
+  ],
+  "reference_used_during_solve": false,
+  "reference_compared_after_solve": true,
+  "validation_passed": true,
+  "limitation": "Fixed 1D benchmark. Accuracy degrades when alpha*(pi/L)**2*T is large because the fast exponential decay is hard for a low-degree time polynomial. High condition numbers do not by themselves imply the sampled errors above.",
+  "max_abs_solution_error": 4.9111566612575826e-08,
+  "rms_solution_error": 8.857891964887178e-09
+}
