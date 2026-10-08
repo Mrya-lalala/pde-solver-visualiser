@@ -1,13 +1,27 @@
-# Rosenau-Hyman and heat-equation Hermite benchmarks
+# PDE Solver / Visualiser
 
-Three runnable Python programs share the single-cell (k=1) shifted physicists'
-Hermite collocation machinery:
+A local Hermite-basis numerical solver and interactive visualiser for supported
+PDE benchmarks. The interface supports Rosenau-Hyman and semi-spherical porous-fin
+problems; the heat-equation benchmark is available as a separate script.
+
+The local app now also includes the semi-spherical porous-fin PDE from Pavan
+Kumar et al. (2026), implemented with Hermite polynomials. See [POROUS_FIN.md](POROUS_FIN.md)
+for its equation, startup interpretation, tested dimensionless presets and
+independent numerical validation. Select it in the problem menu and press Solve.
+The heat solver remains separate from the local interface.
+
+For academic review, see the [porous-fin equation comparison and implementation
+note](output/pdf/Hermite_Porous_Fin_Comparison_Note.pdf). A saved porous-fin run
+and offline viewer are included in [results-fin/](results-fin/).
+
+The runnable programs use shifted physicists' Hermite polynomials and a shared viewer:
 
 - `rosenau_hyman.py` - nonlinear Rosenau-Hyman benchmark.
 - `heat_equation.py` - linear heat-equation benchmark (see its own section).
+- `porous_fin.py` - transient semi-spherical porous-fin PDE from the supplied PDF.
 - `build_viewer.py` - offline interactive HTML exporter for solver archives.
 
-Neither solver reproduces every table in the paper nor accepts arbitrary PDE
+These solvers do not reproduce every table in the papers or accept arbitrary PDE
 expressions. The Rosenau-Hyman benchmark solves
 
     u_t = u*u_xxx + u*u_x + 3*u_x*u_xx
@@ -16,7 +30,7 @@ on 0 <= x <= 1, 0 <= t <= 1. Current defaults: `SPEED = 1`, `SHIFT = 0`, `N = 6`
 Hermite functions per variable. It implements the mixed-derivative
 integration/collocation approach.
 
-## Local Rosenau-Hyman interface
+## Local solver interface
 
 Run from this directory with the existing environment:
 
@@ -47,11 +61,11 @@ T in {0.5, 1}; L is fixed at 1. Of these 24 combinations, 23 passed local
 validation. The combination c=2, a=0.5, N=5, T=1 is rejected because its PDE
 residual exceeds 1e-5. See `validated_combinations.json` for measurements.
 These are tested combinations, not a guarantee for unrestricted numeric inputs.
-Only the single-cell Hermite basis is implemented. No arbitrary initial-function
+The Rosenau-Hyman solver uses the single-cell Hermite basis. No arbitrary initial-function
 entry or separate amplitude control is provided. Initial data and all three
 boundary traces are generated together from speed and shift and shown in the UI.
 
-Every solve checks finite fields, algebraic residual <=1e-8, independently sampled
+Every Rosenau-Hyman solve checks finite fields, algebraic residual <=1e-8, independently sampled
 PDE residual <=1e-5, and initial/boundary errors <=1e-12. Exact comparison is
 optional and runs only after the numerical solve; it never supplies coefficients.
 Sampled errors are not rigorous error bounds or evidence of general well-posedness.
@@ -324,6 +338,6 @@ S. Kumbinarasaiah and Waleed Adel, "Hermite wavelet method for solving nonlinear
 Rosenau-Hyman equation", Partial Differential Equations in Applied Mathematics
 4 (2021), 100062. DOI: 10.1016/j.padiff.2021.100062.
 
-Only the benchmark formulation is implemented. No general wavelet selection,
-multiple-cell basis, general boundary-condition engine or PDE classifier is
-included in this first version.
+Only documented problem formulations are implemented. The porous-fin solver uses
+multiple spatial cells with Hermite polynomials; the other benchmarks use a single
+cell. No general basis selection, boundary-condition engine or PDE classifier is included.

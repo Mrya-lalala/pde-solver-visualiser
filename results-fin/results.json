@@ -1,0 +1,61 @@
+{
+  "equation": "(1-X^2)*theta_tau = ((1-X^2)*theta_X)_X - sqrt(1-X^2)*F(theta)",
+  "source": "Pavan Kumar, Gireesha, Venkatesh (2026), DOI 10.1007/s10999-026-09893-6, Eq. (13)-(14)",
+  "method": "C1 piecewise shifted Hermite weighted Galerkin; implicit BDF in time",
+  "parameters": {
+    "nc": 0.5,
+    "nr": 0.1,
+    "n1_squared": 0.5,
+    "wet_term": 0.1,
+    "power": 1,
+    "duration": 0.8,
+    "cells": 12,
+    "count": 6,
+    "reference": true
+  },
+  "parameter_note": "Illustrative dimensionless coefficients for Eq. (13); not a reconstruction of either ceramic material baseline.",
+  "basis_count_per_cell": 6,
+  "cells": 12,
+  "unknown_coefficients": 48,
+  "space_interval": [
+    0,
+    1
+  ],
+  "time_interval": [
+    0,
+    0.8
+  ],
+  "initial_profile": "theta(X,0)=0 for X>0; theta(0,0+)=1 (base step)",
+  "boundary_conditions": "theta(0,tau)=1; theta_X(1,tau)=0",
+  "startup_note": "Zero interior initial state is projected in weighted L2. The initial corner is discontinuous; polynomial startup traces are not pointwise exact.",
+  "initial_weighted_L2_projection_error": 0.022734383588952186,
+  "nonlinear_solver_message": "The solver successfully reached the end of the integration interval.",
+  "time_integrator_rtol": 2e-08,
+  "time_integrator_atol": 2e-10,
+  "mass_condition_number_before_orthonormalization": 392568.1319231417,
+  "base_max_abs_error": 2.220446049250313e-16,
+  "tip_max_abs_derivative": 1.038670994089688e-12,
+  "data_error_tolerance": 1e-10,
+  "independent_weak_residual": 1.0904616157630075e-06,
+  "weak_residual_tolerance": 1e-05,
+  "independent_weighted_strong_pde_residual": 0.004562643404984371,
+  "weighted_strong_residual_tolerance": 0.02,
+  "residual_check_time_interval": [
+    0.05,
+    0.8
+  ],
+  "temporal_residual_check": "Second-order finite differences of the completed BDF interpolant, step 1e-5",
+  "minimum_temperature_after_start": -1.3703291834588072e-09,
+  "maximum_temperature_after_start": 1.0000000000000002,
+  "reference_used_during_solve": false,
+  "comparison_tolerance": 0.002,
+  "limitation": "Weak-form approximation of dimensionless Eq. (13); no exact solution supplied by the paper. Finite-volume agreement and refinement are sampled checks. No full paper/material reproduction claimed.",
+  "final_fin_efficiency_eq16": 0.6994435647267198,
+  "comparison_label": "Independent conservative finite-volume solution (400 cells), not exact",
+  "max_abs_comparison_difference_after_start": 3.5752293950919167e-06,
+  "comparison_time_interval": [
+    0.05,
+    0.8
+  ],
+  "validation_passed": true
+}

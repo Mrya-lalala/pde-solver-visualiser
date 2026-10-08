@@ -1,13 +1,14 @@
 # Local solving and offline export
 
-For the live Rosenau-Hyman interface, run:
+For the local Hermite PDE interface, run:
 
 ```powershell
 .\.venv\Scripts\python.exe local_server.py
 ```
 
-Open http://127.0.0.1:8765 and press Solve. Only the tested Rosenau-Hyman
-travelling-wave combinations are exposed. The heat solver remains separate.
+Open http://127.0.0.1:8765, select Rosenau-Hyman or the semi-spherical porous-fin
+problem and press Solve. Each uses its tested combinations; see POROUS_FIN.md
+for the PDF equation, coefficient presets and numerical comparison. The heat solver remains separate.
 The service binds only to loopback, validates numeric JSON and request origin,
 and runs a single numerical job at a time. No solver runs on slider movement.
 Successful runs are saved separately under `local-runs/<run-id>/`, including an

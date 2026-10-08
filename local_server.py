@@ -1,4 +1,4 @@
-"""Loopback-only Rosenau-Hyman application. Run with the existing venv Python."""
+"""Loopback-only Hermite PDE application. Run with the existing venv Python."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -12,14 +12,30 @@ import uuid
 import numpy as np
 from build_viewer import render_viewer, viewer_payload
 from rosenau_hyman import compute, travelling_wave
+import porous_fin
 
 ROOT = Path(__file__).resolve().parent
 DEFAULTS = dict(speed=1, shift=0, count=6, length=1, duration=1, reference=True)
 COMBINATIONS = json.loads((ROOT / 'validated_combinations.json').read_text())
 SUPPORTED = [row['parameters'] for row in COMBINATIONS if row['passed']]
+FIN_COMBINATIONS = json.loads((ROOT / 'validated_fin_combinations.json').read_text())
+FIN_SUPPORTED = [row['parameters'] for row in FIN_COMBINATIONS if row['passed']]
+FIN_PRESETS = {row['preset']: {k:v for k,v in row['parameters'].items()
+               if k in ('nc','nr','n1_squared','wet_term','power')} for row in FIN_COMBINATIONS if row['passed']}
 
 
 def validate_request(data):
+    if isinstance(data, dict) and data.get('problem') == 'porous_fin':
+        params = {k:v for k,v in data.items() if k != 'problem'}
+        porous_fin.validate_parameters(params)
+        if {k:v for k,v in params.items() if k!='reference'} not in FIN_SUPPORTED:
+            raise ValueError('Unsupported porous-fin combination. Choose a tested coefficient preset and resolution.')
+        return dict(data)
+    if isinstance(data, dict) and 'problem' in data:
+        if data['problem'] != 'rosenau_hyman':
+            raise ValueError('Unsupported problem family.')
+        validate_request({k:v for k,v in data.items() if k!='problem'})
+        return dict(data)
     if not isinstance(data, dict) or set(data) != set(DEFAULTS):
         raise ValueError('Provide exactly speed, shift, count, length, duration and reference.')
     if type(data['reference']) is not bool:
@@ -36,6 +52,11 @@ def validate_request(data):
 
 def solve_request(parameters):
     p = validate_request(parameters)
+    if p.get('problem') == 'porous_fin':
+        arrays, report = porous_fin.compute({k:v for k,v in p.items() if k!='problem'})
+        report['parameters'] = p
+        report['run_id'] = uuid.uuid4().hex
+        return arrays, report
     initial, traces, reference = travelling_wave(p['speed'], p['shift'])
     arrays, report, _ = compute(p['count'], p['length'], p['duration'], initial, traces,
                                reference if p['reference'] else None)
@@ -109,7 +130,8 @@ def make_server(port=8765, output=ROOT / 'local-runs'):
                 return self.respond(403, {'error': 'Loopback host required.'})
             if self.path == '/':
                 return self.respond(200, render_viewer(dict(live=True, token=app.token,
-                    defaults=DEFAULTS, supported=SUPPORTED)), 'text/html')
+                    defaults=DEFAULTS, supported=SUPPORTED, fin_defaults=porous_fin.DEFAULTS,
+                    fin_supported=FIN_SUPPORTED, fin_presets=FIN_PRESETS)), 'text/html')
             with app.lock:
                 if self.path == '/api/status':
                     return self.respond(200, app.state)
@@ -149,7 +171,7 @@ if __name__ == '__main__':
     parser.add_argument('--port', type=int, default=8765)
     args = parser.parse_args()
     server = make_server(args.port)
-    print(f'Open http://127.0.0.1:{server.server_port} — press Ctrl+C to stop.', flush=True)
+    print(f'Open http://127.0.0.1:{server.server_port} - press Ctrl+C to stop.', flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

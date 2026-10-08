@@ -17,6 +17,7 @@ def render_viewer(payload):
 def viewer_payload(arrays, report=None, **extra):
     return dict(x=arrays['x'].tolist(), t=arrays['t'].tolist(), u=arrays['u'].T.tolist(),
                 exact=None if 'exact' not in arrays else arrays['exact'].T.tolist(),
+                comparison=None if 'comparison' not in arrays else arrays['comparison'].T.tolist(),
                 report=report, **extra)
 
 
@@ -27,6 +28,7 @@ def build_viewer(source, output):
     with np.load(source, allow_pickle=False) as data:
         x, t, u = (np.asarray(data[k], dtype=float) for k in ('x', 't', 'u'))
         exact = np.asarray(data['exact'], dtype=float) if 'exact' in data else None
+        comparison = np.asarray(data['comparison'], dtype=float) if 'comparison' in data else None
     for name, a in [('x', x), ('t', t)]:
         if a.ndim != 1 or len(a) < 2 or not np.isfinite(a).all() or not (np.diff(a) > 0).all():
             raise ValueError(f'{name} must be a finite, strictly increasing 1D array with at least 2 values.')
@@ -34,9 +36,12 @@ def build_viewer(source, output):
         raise ValueError('u must be finite and have shape (len(x), len(t)).')
     if exact is not None and (exact.shape != u.shape or not np.isfinite(exact).all()):
         raise ValueError('exact must be finite and have the same shape as u.')
+    if comparison is not None and (comparison.shape != u.shape or not np.isfinite(comparison).all()):
+        raise ValueError('comparison must be finite and have the same shape as u.')
     # Rows of browser field correspond to times, columns to positions.
     payload = dict(x=x.tolist(), t=t.tolist(), u=u.T.tolist(),
-                   exact=None if exact is None else exact.T.tolist(), source=source.name)
+                   exact=None if exact is None else exact.T.tolist(),
+                   comparison=None if comparison is None else comparison.T.tolist(), source=source.name)
     report_path = source.with_name('results.json')
     payload['report'] = json.loads(report_path.read_text()) if report_path.exists() else None
     text = render_viewer(payload)

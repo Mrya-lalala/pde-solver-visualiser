@@ -6,3 +6,4 @@
 *.json text eol=lf
 *.npz binary
 *.png binary
+*.pdf binary

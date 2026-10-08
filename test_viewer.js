@@ -6,6 +6,9 @@ const vm = require('node:vm');
 const html = fs.readFileSync('viewer_template.html', 'utf8');
 const defaults = {speed:1,shift:0,count:6,length:1,duration:1,reference:true};
 const supported = JSON.parse(fs.readFileSync('validated_combinations.json','utf8')).filter(r=>r.passed).map(r=>r.parameters);
+const finRows=JSON.parse(fs.readFileSync('validated_fin_combinations.json','utf8')).filter(r=>r.passed);
+const fin_supported=finRows.map(r=>r.parameters);
+const fin_presets=Object.fromEntries(finRows.map(r=>[r.preset,Object.fromEntries(Object.entries(r.parameters).filter(([k])=>['nc','nr','n1_squared','wet_term','power'].includes(k)))]));
 const elements = new Map();
 function element(id) {
   if (!elements.has(id)) elements.set(id, {value:'',checked:true,hidden:false,open:false,
@@ -22,11 +25,12 @@ const context = vm.createContext({console, document:{getElementById:element,addE
       const p=JSON.parse(options.body);
       status=fail?{status:'failed',job_id:'job',parameters:p,error:'test failure'}:{status:'complete',job_id:'job',parameters:p,run_id:'run'};
       if(!fail) result={x:[0,1],t:[0,.5,1],u:[[-2,-1],[-1,-.5],[0,.1]],exact:p.reference?[[-2,-1],[-1,-.5],[0,.1]]:null,report:{parameters:p,run_id:'run'}};
+      if(!fail && p.problem==='porous_fin') {result.comparison=result.exact;result.exact=null;}
       return {ok:true,json:async()=>({job_id:'job'})};
     }
     return {ok:path==='/api/status'||!!result,json:async()=>path==='/api/status'?status:result||{error:'Not found'}};
   }});
-const script = html.split('<script>').at(-1).split('</script>')[0].replace('/*__DATA__*/',JSON.stringify({live:true,token:'test',defaults,supported}));
+const script = html.split('<script>').at(-1).split('</script>')[0].replace('/*__DATA__*/',JSON.stringify({live:true,token:'test',defaults,supported,fin_supported,fin_presets}));
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 (async()=>{
   vm.runInContext(script,context);await flush();
@@ -53,5 +57,19 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
   assert.equal(element('curve').data.length,1);
   assert.equal(element('error').disabled,true);
   assert.equal(element('overlay').disabled,true);
+  element('problem').value='porous_fin';element('reference').checked=true;
+  element('problem').onchange();
+  assert.equal(element('speed-control').hidden,true);
+  assert.equal(element('fin-preset-control').hidden,false);
+  assert.match(element('conditions').textContent,/theta_tau/);
+  await element('solve').onclick();await flush();
+  assert.match(element('displayed').textContent,/porous-fin/);
+  assert.match(element('curve').data[1].name,/not exact/);
+  assert.match(element('overlay-label').textContent,/not exact/);
+  assert.match(element('error').textContent,/Numerical difference/);
+  const finDisplayed=element('displayed').textContent;
+  element('original').onclick();
+  assert.equal(element('problem').value,'rosenau_hyman');
+  assert.equal(element('displayed').textContent,finDisplayed);
   console.log('Viewer state checks passed (no real-browser rendering).');
 })().catch(e=>{console.error(e);process.exitCode=1});
