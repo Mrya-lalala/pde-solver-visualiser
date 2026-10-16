@@ -17,11 +17,14 @@ vm.runInContext(fs.readFileSync('browser_client.js','utf8'),context);
 const rh={speed:1,shift:0,count:6,length:1,duration:1};
 const included={report:{run_id:'saved'}};
 const initial={saved_result:included,supported:[rh],fin_supported:[]};
+const dovetail=JSON.parse(fs.readFileSync('validated_dovetail_combinations.json','utf8')).find(r=>r.passed).parameters;
+initial.dovetail_supported=[dovetail];
 const create=()=>context.window.createBrowserSolver(initial);
 const submit=(api,p={...rh,reference:true})=>api('/api/solve',{method:'POST',body:JSON.stringify(p)});
 
 (async()=>{
   const api=create(),other=create();
+  await assert.rejects(submit(api,{...dovetail,problem:'dovetail_fin',basis:'hermite',reference:true}),/Unsupported/);
   await assert.rejects(submit(api,{...rh,reference:true,count:4}),/Unsupported/);
   await assert.rejects(submit(api,{...rh,reference:true,extra:1}),/Unsupported/);
   assert.equal(workers.length,0,'rejected inputs must not start a numerical worker');
@@ -47,5 +50,8 @@ const submit=(api,p={...rh,reference:true})=>api('/api/solve',{method:'POST',bod
   assert.equal(workers[0].terminated,true,'timed-out work must stop');
   await submit(api);
   assert.equal(workers.length,2,'retry after timeout must use a fresh worker');
+  const legendre=create();
+  await submit(legendre,{...dovetail,problem:'dovetail_fin',basis:'legendre',reference:false});
+  assert.equal((await legendre('/api/status')).status,'running');
   console.log('Browser adapter checks passed.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

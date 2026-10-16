@@ -4,7 +4,7 @@ Published URL: https://mrya-lalala.github.io/pde-solver-visualiser/
 
 The public GitHub Pages site serves `docs/` from `main`. Visitors do not need
 Python, a GitHub account, or access to the developer's computer. The initial
-porous-fin plot is an explicitly labelled saved numerical sample. Pressing
+dovetail-fin plot is an explicitly labelled saved numerical sample. Pressing
 **Solve** executes a new numerical computation on the visitor's device.
 
 ## How it works
@@ -15,9 +15,10 @@ porous-fin plot is an explicitly labelled saved numerical sample. Pressing
 - `browser_worker.js` loads pinned Pyodide 0.28.3 and its NumPy, SciPy and SymPy
   packages from jsDelivr. It imports copies of the original Python modules and
   calls the shared `solver_service.solve_request` entry point.
-- `solver_service.py` contains the same structured-input validation, supported
+- `solver_service.py` contains the shared structured-input validation, supported
   combinations and solver dispatch used by `local_server.py`. The Rosenau-Hyman
-  and porous-fin numerical formulations and tolerances are unchanged.
+  and semi-spherical fin formulations are preserved. The new `dovetail_fin.py`
+  implements the 2024 inclined-fin PDE with localized Legendre wavelets and BDF.
 - Exact/reference comparisons remain optional and separate from the numerical
   solve. Porous-fin comparison uses the independent finite-volume solver, not an
   exact solution. All results run the existing independent validation checks.
@@ -38,7 +39,7 @@ are available without starting a new solve.
 After modifying the solver, template, supported registries or browser adapter:
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest test_local_solver test_porous_fin
+.\.venv\Scripts\python.exe -m unittest test_local_solver test_porous_fin test_dovetail_fin
 node test_viewer.js
 node test_browser_client.js
 .\.venv\Scripts\python.exe build_web.py
@@ -60,21 +61,25 @@ the loopback-only Python application continue to work as before.
 
 ## Verification performed on 16 October 2026
 
-- The 10 existing native numerical/API tests pass after extracting shared dispatch.
+- All 17 native numerical/API tests pass, including the Legendre-wavelet solver.
 - Viewer state checks and browser-adapter checks pass, including invalid inputs,
   visitor isolation, stale messages, failure retention and timeout recovery.
-- Headless Chrome executes real browser solves for all 47 exposed combinations:
-  24 porous-fin and 23 Rosenau-Hyman cases. All pass their existing numerical
+- Headless Chrome executes real browser solves for all 67 exposed combinations:
+  20 dovetail-fin, 24 semi-spherical fin and 23 Rosenau-Hyman cases. All pass their
   validation thresholds under Pyodide 0.28.3.
 - The default browser porous-fin result has a maximum difference of about
   `3.58e-6` from the independent 400-cell finite-volume calculation, consistent
   with the desktop result. The default Rosenau-Hyman independent PDE residual is
   about `1.98e-8`.
-- Browser checks exercise both problem families, parameter changes and immediate
-  time scrubbing; desktop rendering is visually inspected.
+- The default Legendre-wavelet dovetail result differs from its independent
+  400-cell finite-volume comparison by about `2.84e-6`; its weak residual is
+  about `5.00e-8`. Its assumptions and analytic-limit verification are documented
+  in [DOVETAIL_FIN.md](DOVETAIL_FIN.md).
+- Browser checks exercise all three problem families, parameter changes and
+  immediate time scrubbing; desktop and mobile rendering are visually inspected.
 
 These checks cover the documented supported combinations, not arbitrary PDEs or
-unrestricted inputs. The porous-fin coefficients remain illustrative dimensionless
+unrestricted inputs. The semi-spherical fin coefficients remain illustrative dimensionless
 presets; the paper's unresolved formulation questions are documented in the linked
 comparison PDF.
 

@@ -13,9 +13,12 @@ async function initialize(job) {
       messageCallback:message=>self.postMessage({type:'progress',job,message}),
     });
     py.FS.mkdirTree('/app');
-    await Promise.all(['rosenau_hyman.py', 'porous_fin.py', 'solver_service.py',
-      'validated_combinations.json', 'validated_fin_combinations.json'].map(async name=>{
-      const response = await fetch(new URL('python/' + name, self.location.href));
+    await Promise.all(['rosenau_hyman.py', 'porous_fin.py', 'dovetail_fin.py', 'solver_service.py',
+      'validated_combinations.json', 'validated_fin_combinations.json', 'validated_dovetail_combinations.json'].map(async name=>{
+      const url=new URL('python/'+name,self.location.href);
+      const version=new URL(self.location.href).searchParams.get('v');
+      if(version)url.searchParams.set('v',version);
+      const response = await fetch(url);
       if (!response.ok) throw Error('Could not load solver file: ' + name);
       py.FS.writeFile('/app/' + name, await response.text());
     }));
@@ -47,7 +50,7 @@ self.onmessage = async ({data}) => {
   const {job, parameters} = data;
   try {
     const py = await initialize(job);
-    self.postMessage({type:'progress',job,message:'Computing the Hermite numerical solution and independent residual checks...'});
+    self.postMessage({type:'progress',job,message:'Computing the '+(parameters.basis==='legendre'?'Legendre-wavelet':'Hermite')+' numerical solution and independent residual checks...'});
     py.globals.set('parameters_json', JSON.stringify(parameters));
     const result = JSON.parse(await py.runPythonAsync('web_solve(parameters_json)'));
     self.postMessage({type:'result',job,...result});

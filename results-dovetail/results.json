@@ -1,0 +1,75 @@
+{
+  "problem": "dovetail_fin",
+  "basis": "legendre",
+  "parameters": {
+    "nc": 1,
+    "nr": 1,
+    "m_squared": 1,
+    "taper": -0.1,
+    "q": 0.1,
+    "epsilon_g": 0.2,
+    "theta_a": 0.2,
+    "wet_parameter": 1,
+    "power": 1,
+    "angle_degrees": 45,
+    "phi1": 0.02,
+    "phi2": 0.02,
+    "phi3": 0.02,
+    "count": 6,
+    "cells": 8,
+    "duration": 0.8,
+    "reference": true
+  },
+  "source": "Pavan Kumar, Gireesha, Venkatesh (2024), DOI 10.1140/epjp/s13360-023-04848-8, Eq. (14)-(15)",
+  "equation": "a*theta_tau = D*(a*theta_X)_X + g*a*(1+epsilon_g*s) - B*s^2 - R*s - W*s^(p+1); a=1-C*X; s=theta-theta_a",
+  "method": "Localized orthonormal Legendre wavelets on dyadic cells; C1-constrained weighted Galerkin; BDF time integration",
+  "material_ratios": {
+    "rho": 1.3259705673998872,
+    "heat": 0.9774135873548592,
+    "beta": 0.9749030014845934,
+    "mu": 1.1636019283689552,
+    "k": 1.1947101041661032
+  },
+  "effective_coefficients": {
+    "diffusion": 1.2223178801916454,
+    "generation": 0.10231083473131018,
+    "convection": 0.5924367316193483,
+    "radiation": 1.0231083473131017,
+    "wet": 3.013836192639713
+  },
+  "wavelet_level": 4,
+  "unknown_coefficients": 32,
+  "space_interval": [
+    0,
+    1
+  ],
+  "time_interval": [
+    0,
+    0.8
+  ],
+  "initial_profile": "theta(X,0)=0 for X<1; theta(1,0+)=1",
+  "boundary_conditions": "theta_X(0,tau)=0 (insulated tip); theta(1,tau)=1 (base)",
+  "startup_note": "The zero interior initial state is projected in weighted L2; the base steps to one at X=1. Saved time zero shows the prescribed data. Startup before tau=0.05 is not certified.",
+  "initial_weighted_L2_projection_error": 0.06361768311398747,
+  "nonlinear_solver_message": "The solver successfully reached the end of the integration interval.",
+  "time_integrator_rtol": 1e-09,
+  "time_integrator_atol": 1e-11,
+  "independent_weighted_strong_pde_residual": 0.00014675268609554148,
+  "weighted_strong_residual_tolerance": 0.002,
+  "independent_weak_residual": 5.0018041486410425e-08,
+  "weak_residual_tolerance": 1e-05,
+  "base_max_abs_error": 0.0,
+  "tip_max_abs_derivative": 1.929529831240081e-14,
+  "data_error_tolerance": 1e-10,
+  "residual_check_time_interval": [
+    0.05,
+    0.8
+  ],
+  "reference_used_during_solve": false,
+  "interpretation": "Printed dimensionless Eq. (14); Table 2 RHSs interpreted as property ratios; baseline G=0.1 interpreted as Q=0.1. Printed dimensional-time scaling is unresolved.",
+  "limitation": "Numerical solution of the stated dimensionless problem; sampled checks are not rigorous bounds or full reproduction of the material curves.",
+  "comparison_label": "Independent conservative finite-volume solution (400 cells), not exact",
+  "max_abs_comparison_difference_after_start": 2.8400835486719345e-06,
+  "comparison_tolerance": 0.0002,
+  "validation_passed": true
+}

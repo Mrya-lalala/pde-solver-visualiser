@@ -9,6 +9,10 @@ const supported = JSON.parse(fs.readFileSync('validated_combinations.json','utf8
 const finRows=JSON.parse(fs.readFileSync('validated_fin_combinations.json','utf8')).filter(r=>r.passed);
 const fin_supported=finRows.map(r=>r.parameters);
 const fin_presets=Object.fromEntries(finRows.map(r=>[r.preset,Object.fromEntries(Object.entries(r.parameters).filter(([k])=>['nc','nr','n1_squared','wet_term','power'].includes(k)))]));
+const dovetailRows=JSON.parse(fs.readFileSync('validated_dovetail_combinations.json','utf8')).filter(r=>r.passed);
+const dovetail_supported=dovetailRows.map(r=>r.parameters);
+const dovetail_presets=Object.fromEntries(dovetailRows.map(r=>[r.preset,Object.fromEntries(Object.entries(r.parameters).filter(([k])=>!['count','cells','duration'].includes(k)))]));
+const dovetail_models=Object.fromEntries(dovetailRows.map(r=>[r.preset,{coefficients:{diffusion:1,generation:.1,convection:1,radiation:1,wet:1},ratios:{rho:1,heat:1,beta:1,mu:1,k:1}}]));
 const elements = new Map();
 function element(id) {
   if (!elements.has(id)) elements.set(id, {value:'',checked:true,hidden:false,open:false,
@@ -26,11 +30,12 @@ const context = vm.createContext({console, document:{getElementById:element,addE
       status=fail?{status:'failed',job_id:'job',parameters:p,error:'test failure'}:{status:'complete',job_id:'job',parameters:p,run_id:'run'};
       if(!fail) result={x:[0,1],t:[0,.5,1],u:[[-2,-1],[-1,-.5],[0,.1]],exact:p.reference?[[-2,-1],[-1,-.5],[0,.1]]:null,report:{parameters:p,run_id:'run'}};
       if(!fail && p.problem==='porous_fin') {result.comparison=result.exact;result.exact=null;}
+      if(!fail && p.problem==='dovetail_fin') {result.comparison=result.exact;result.exact=null;result.report.basis='legendre';result.report.problem='dovetail_fin';}
       return {ok:true,json:async()=>({job_id:'job'})};
     }
     return {ok:path==='/api/status'||!!result,json:async()=>path==='/api/status'?status:result||{error:'Not found'}};
   }});
-const script = html.split('<script>').at(-1).split('</script>')[0].replace('/*__DATA__*/',JSON.stringify({live:true,token:'test',defaults,supported,fin_supported,fin_presets}));
+const script = html.split('<script>').at(-1).split('</script>')[0].replace('/*__DATA__*/',JSON.stringify({live:true,token:'test',defaults,supported,fin_supported,fin_presets,dovetail_supported,dovetail_presets,dovetail_models}));
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 (async()=>{
   vm.runInContext(script,context);await flush();
@@ -71,5 +76,21 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
   element('original').onclick();
   assert.equal(element('problem').value,'rosenau_hyman');
   assert.equal(element('displayed').textContent,finDisplayed);
+  element('problem').value='dovetail_fin';element('problem').onchange();
+  assert.match(element('basis-description').textContent,/Legendre/);
+  assert.equal(element('fin-preset-control').hidden,true);
+  assert.equal(element('dovetail-resolution').hidden,false);
+  assert.match(element('conditions').textContent,/theta_X\(0,tau\)=0; theta\(1,tau\)=1/);
+  await element('solve').onclick();await flush();
+  assert.match(element('curve').data[0].name,/Legendre/);
+  assert.match(element('displayed').textContent,/dovetail-fin/);
+  assert.match(element('curve').data[1].name,/not exact/);
+  element('dovetail-preset').value='linear_benchmark';element('dovetail-cells').value=4;
+  element('dovetail-preset').onchange();
+  assert.equal(Number(element('dovetail-duration').value),5);
+  assert.equal(Number(element('dovetail-cells').value),8);
+  assert.equal(element('solve').disabled,false);
+  element('dovetail-cells').value=4;element('dovetail-cells').onchange();
+  assert.equal(element('solve').disabled,true,'failed resolution must be rejected');
   console.log('Viewer state checks passed (no real-browser rendering).');
 })().catch(e=>{console.error(e);process.exitCode=1});

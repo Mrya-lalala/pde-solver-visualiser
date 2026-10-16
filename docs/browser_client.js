@@ -11,19 +11,22 @@ window.createBrowserSolver = function(initial) {
   };
   function start(parameters) {
     if(state.status==='running') throw Error('A solve is already running.');
-    const combinations=parameters.problem==='porous_fin'?initial.fin_supported:initial.supported;
-    const keys=parameters.problem==='porous_fin'
+    const dovetail=parameters.problem==='dovetail_fin';
+    const combinations=dovetail?initial.dovetail_supported:parameters.problem==='porous_fin'?initial.fin_supported:initial.supported;
+    const keys=dovetail
+      ?['problem','basis','nc','nr','m_squared','taper','q','epsilon_g','theta_a','wet_parameter','power','angle_degrees','phi1','phi2','phi3','count','cells','duration','reference']
+      :parameters.problem==='porous_fin'
       ?['problem','nc','nr','n1_squared','wet_term','power','duration','cells','count','reference']
       :['speed','shift','count','length','duration','reference'];
     if(Object.keys(parameters).length!==keys.length || keys.some(k=>!(k in parameters)) ||
-       typeof parameters.reference!=='boolean' ||
+       typeof parameters.reference!=='boolean' || (dovetail && parameters.basis!=='legendre') ||
        !combinations.some(p=>Object.keys(p).every(k=>p[k]===parameters[k]))) {
       throw Error('Unsupported parameter combination. Choose a tested preset.');
     }
     const job=crypto.randomUUID();
     state={status:'running',job_id:job,parameters};
     if(!worker) {
-      try { worker=new Worker(new URL('browser_worker.js',document.baseURI)); }
+      try {const url=new URL('browser_worker.js',document.baseURI);if(initial.site_version)url.searchParams.set('v',initial.site_version);worker=new Worker(url);}
       catch(error) {fail(error.message); throw error;}
       worker.onerror=event=>{event.preventDefault();fail('Browser worker failed. Please retry or use a current desktop browser.');};
       worker.onmessage=({data})=>{

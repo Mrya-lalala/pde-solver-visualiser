@@ -12,7 +12,8 @@ import numpy as np
 from build_viewer import render_viewer, viewer_payload
 import porous_fin
 from solver_service import (DEFAULTS, COMBINATIONS, SUPPORTED, FIN_COMBINATIONS,
-                            FIN_SUPPORTED, FIN_PRESETS, validate_request, solve_request)
+                            FIN_SUPPORTED, FIN_PRESETS, DOVETAIL_SUPPORTED,
+                            DOVETAIL_PRESETS, DOVETAIL_MODELS, validate_request, solve_request)
 
 ROOT = Path(__file__).resolve().parent
 
@@ -82,7 +83,9 @@ def make_server(port=8765, output=ROOT / 'local-runs'):
             if self.path == '/':
                 return self.respond(200, render_viewer(dict(live=True, token=app.token,
                     defaults=DEFAULTS, supported=SUPPORTED, fin_defaults=porous_fin.DEFAULTS,
-                    fin_supported=FIN_SUPPORTED, fin_presets=FIN_PRESETS)), 'text/html')
+                    fin_supported=FIN_SUPPORTED, fin_presets=FIN_PRESETS,
+                    dovetail_supported=DOVETAIL_SUPPORTED,dovetail_presets=DOVETAIL_PRESETS,
+                    dovetail_models=DOVETAIL_MODELS)), 'text/html')
             with app.lock:
                 if self.path == '/api/status':
                     return self.respond(200, app.state)

@@ -6,6 +6,7 @@ import uuid
 
 from rosenau_hyman import compute, travelling_wave
 import porous_fin
+import dovetail_fin
 
 ROOT = Path(__file__).resolve().parent
 DEFAULTS = dict(speed=1, shift=0, count=6, length=1, duration=1, reference=True)
@@ -15,9 +16,22 @@ FIN_COMBINATIONS = json.loads((ROOT / 'validated_fin_combinations.json').read_te
 FIN_SUPPORTED = [row['parameters'] for row in FIN_COMBINATIONS if row['passed']]
 FIN_PRESETS = {row['preset']: {k:v for k,v in row['parameters'].items()
                if k in ('nc','nr','n1_squared','wet_term','power')} for row in FIN_COMBINATIONS if row['passed']}
+DOVETAIL_COMBINATIONS = json.loads((ROOT / 'validated_dovetail_combinations.json').read_text())
+DOVETAIL_SUPPORTED = [row['parameters'] for row in DOVETAIL_COMBINATIONS if row['passed']]
+DOVETAIL_PRESETS = dovetail_fin.PRESETS
+DOVETAIL_MODELS = {name:dict(coefficients=dovetail_fin.coefficients(p),ratios=dovetail_fin.material_ratios(p))
+                   for name,p in DOVETAIL_PRESETS.items()}
 
 
 def validate_request(data):
+    if isinstance(data,dict) and data.get('problem')=='dovetail_fin':
+        if data.get('basis')!='legendre':
+            raise ValueError('The dovetail-fin problem supports the validated Legendre-wavelet basis only.')
+        params={k:v for k,v in data.items() if k not in ('problem','basis')}
+        dovetail_fin.validate_parameters(params)
+        if {k:v for k,v in params.items() if k!='reference'} not in DOVETAIL_SUPPORTED:
+            raise ValueError('Unsupported dovetail-fin combination. Select a tested preset/resolution.')
+        return dict(data)
     if isinstance(data, dict) and data.get('problem') == 'porous_fin':
         params = {k:v for k,v in data.items() if k != 'problem'}
         porous_fin.validate_parameters(params)
@@ -45,6 +59,11 @@ def validate_request(data):
 
 def solve_request(parameters):
     p = validate_request(parameters)
+    if p.get('problem')=='dovetail_fin':
+        arrays,report=dovetail_fin.compute({k:v for k,v in p.items() if k not in ('problem','basis')})
+        report['parameters']=p
+        report['run_id']=uuid.uuid4().hex
+        return arrays,report
     if p.get('problem') == 'porous_fin':
         arrays, report = porous_fin.compute({k:v for k,v in p.items() if k!='problem'})
         report['parameters'] = p

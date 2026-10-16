@@ -1,17 +1,24 @@
 # PDE Solver / Visualiser
 
-A local Hermite-basis numerical solver and interactive visualiser for supported
-PDE benchmarks. The interface supports Rosenau-Hyman and semi-spherical porous-fin
-problems; the heat-equation benchmark is available as a separate script.
+A numerical solver and interactive wavelet visualiser for supported PDE benchmarks.
+The interface supports Rosenau-Hyman and semi-spherical porous-fin problems with
+Hermite, plus the inclined dovetail fin with Legendre wavelets. The heat-equation
+benchmark is available as a separate script.
 
 **Shareable app:** [Open PDE Solver / Visualiser](https://mrya-lalala.github.io/pde-solver-visualiser/).
 No installation or sign-in is needed. Choose a supported problem/preset and press
 **Solve**. The published app runs the same Python numerical solvers in your browser
 using Pyodide, with independent residual checks and optional comparisons. The first
 Solve downloads the Python runtime and numerical libraries; time scrubbing stays
-immediate after a result is ready. An included porous-fin sample can be explored
+immediate after a result is ready. An included dovetail-fin sample can be explored
 before downloading the runtime. See [WEB_HOSTING.md](WEB_HOSTING.md) for deployment
 and verification details.
+
+The 2024 inclined dovetail-fin PDE is implemented with localized Legendre wavelets
+and implicit time integration. Select **Inclined dovetail fin (2024, Eq. 14)** and
+press **Solve**. See [DOVETAIL_FIN.md](DOVETAIL_FIN.md) for the equation, material
+ratios, explicit source interpretations, 20 validated combinations and independent
+accuracy checks. Sample outputs are in [results-dovetail/](results-dovetail/).
 
 The local app now also includes the semi-spherical porous-fin PDE from Pavan
 Kumar et al. (2026), implemented with Hermite polynomials. See [POROUS_FIN.md](POROUS_FIN.md)
@@ -23,11 +30,12 @@ For academic review, see the [porous-fin equation comparison and implementation
 note](output/pdf/Hermite_Porous_Fin_Comparison_Note.pdf). A saved porous-fin run
 and offline viewer are included in [results-fin/](results-fin/).
 
-The runnable programs use shifted physicists' Hermite polynomials and a shared viewer:
+The runnable programs use Hermite or localized Legendre-wavelet bases and a shared viewer:
 
 - `rosenau_hyman.py` - nonlinear Rosenau-Hyman benchmark.
 - `heat_equation.py` - linear heat-equation benchmark (see its own section).
 - `porous_fin.py` - transient semi-spherical porous-fin PDE from the supplied PDF.
+- `dovetail_fin.py` - inclined trihybrid dovetail-fin PDE using Legendre wavelets.
 - `build_viewer.py` - offline interactive HTML exporter for solver archives.
 
 These solvers do not reproduce every table in the papers or accept arbitrary PDE
@@ -347,6 +355,7 @@ S. Kumbinarasaiah and Waleed Adel, "Hermite wavelet method for solving nonlinear
 Rosenau-Hyman equation", Partial Differential Equations in Applied Mathematics
 4 (2021), 100062. DOI: 10.1016/j.padiff.2021.100062.
 
-Only documented problem formulations are implemented. The porous-fin solver uses
-multiple spatial cells with Hermite polynomials; the other benchmarks use a single
-cell. No general basis selection, boundary-condition engine or PDE classifier is included.
+Only documented problem formulations are implemented. The semi-spherical fin uses
+multiple Hermite cells; the dovetail fin uses dyadic Legendre-wavelet cells. The
+Rosenau-Hyman and heat benchmarks use a single Hermite cell. No general basis
+selection, boundary-condition engine or PDE classifier is included.

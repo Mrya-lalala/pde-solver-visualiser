@@ -6,9 +6,11 @@ For the local Hermite PDE interface, run:
 .\.venv\Scripts\python.exe local_server.py
 ```
 
-Open http://127.0.0.1:8765, select Rosenau-Hyman or the semi-spherical porous-fin
-problem and press Solve. Each uses its tested combinations; see POROUS_FIN.md
-for the PDF equation, coefficient presets and numerical comparison. The heat solver remains separate.
+Open http://127.0.0.1:8765, select Rosenau-Hyman, the semi-spherical porous fin,
+or the inclined dovetail fin and press Solve. The first two use Hermite; the
+dovetail fin uses Legendre wavelets. Each uses its tested combinations; see
+POROUS_FIN.md and DOVETAIL_FIN.md for equations, presets and numerical validation.
+The heat solver remains separate.
 The service binds only to loopback, validates numeric JSON and request origin,
 and runs a single numerical job at a time. No solver runs on slider movement.
 Successful runs are saved separately under `local-runs/<run-id>/`, including an
