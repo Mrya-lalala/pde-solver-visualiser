@@ -4,6 +4,15 @@ A local Hermite-basis numerical solver and interactive visualiser for supported
 PDE benchmarks. The interface supports Rosenau-Hyman and semi-spherical porous-fin
 problems; the heat-equation benchmark is available as a separate script.
 
+**Shareable app:** [Open PDE Solver / Visualiser](https://mrya-lalala.github.io/pde-solver-visualiser/).
+No installation or sign-in is needed. Choose a supported problem/preset and press
+**Solve**. The published app runs the same Python numerical solvers in your browser
+using Pyodide, with independent residual checks and optional comparisons. The first
+Solve downloads the Python runtime and numerical libraries; time scrubbing stays
+immediate after a result is ready. An included porous-fin sample can be explored
+before downloading the runtime. See [WEB_HOSTING.md](WEB_HOSTING.md) for deployment
+and verification details.
+
 The local app now also includes the semi-spherical porous-fin PDE from Pavan
 Kumar et al. (2026), implemented with Hermite polynomials. See [POROUS_FIN.md](POROUS_FIN.md)
 for its equation, startup interpretation, tested dimensionless presets and
