@@ -57,4 +57,3 @@ def solve_request(parameters):
     report['run_id'] = uuid.uuid4().hex
     report['reference_compared_after_solve'] = p['reference']
     return arrays, report
-
